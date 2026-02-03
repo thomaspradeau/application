@@ -88,6 +88,13 @@ numeric_transformer = Pipeline(
         ("scaler", MinMaxScaler()),
     ]
 )
+# Variables numériques
+numeric_transformer = Pipeline(
+    steps=[
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", MinMaxScaler()),
+    ]
+)
 
 # Variables catégorielles
 categorical_transformer = Pipeline(
@@ -96,7 +103,15 @@ categorical_transformer = Pipeline(
         ("onehot", OneHotEncoder()),
     ]
 )
+# Variables catégorielles
+categorical_transformer = Pipeline(
+    steps=[
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("onehot", OneHotEncoder()),
+    ]
+)
 
+# Preprocessing
 # Preprocessing
 preprocessor = ColumnTransformer(
     transformers=[
@@ -108,7 +123,17 @@ preprocessor = ColumnTransformer(
         ),
     ]
 )
+    transformers=[
+        ("Preprocessing numerical", numeric_transformer, numeric_features),
+        (
+            "Preprocessing categorical",
+            categorical_transformer,
+            categorical_features,
+        ),
+    ]
+)
 
+# Pipeline
 # Pipeline
 pipe = Pipeline(
     [
@@ -131,5 +156,7 @@ rdmf_score = pipe.score(X_test, y_test)
 print(f"{rdmf_score:.1%} de bonnes réponses sur les données de test pour validation")
 
 print(20 * "-")
+
+print(20 * "-")
 print("matrice de confusion")
-print(confusion_matrix(y_test, pipe.predict(X_test)))
+print(confusion_matrix(y_test, pipe.predict(X_TEST)))
