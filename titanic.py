@@ -5,7 +5,7 @@ Prediction de la survie d'un individu sur le Titanic
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-
+import os
 from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -13,12 +13,30 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.metrics import confusion_matrix
+from dotenv import load_dotenv
+import argparse
 
-N_TREES = 20
-MAX_DEPTH = None
-MAX_FEATURES = "sqrt"
-JETON_API = "$trotskitueleski1917"
+load_dotenv()  
 
+parser = argparse.ArgumentParser(description="Choix des paramètres")
+parser.add_argument(
+    "--N_TREES", type=int, default=20, help="Nombre d'arbres"
+)
+parser.add_argument(
+        "--MAX_DEPTH", type=int, default=None, help="Profondeur maximale des arbres."
+    )
+parser.add_argument(
+        "--MAX_FEATURES", type=str, default="sqrt", help="Nombre de variables à considérer pour chaque split"
+    )
+args = parser.parse_args()
+print(f"Configuration : Arbres={args.N_TREES}, Profondeur={args.MAX_DEPTH}, Features={args.MAX_FEATURES}")
+
+JETON_API = os.environ.get("JETON_API", "")
+
+if JETON_API.startswith("$"):
+    print("API token has been configured properly")
+else:
+    print("API token has not been configured")
 
 # IMPORT ET EXPLORATION DONNEES --------------------------------
 
@@ -50,7 +68,7 @@ plt.show()
 y = TrainingData["Survived"]
 X = TrainingData.drop("Survived", axis="columns")
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+X_TRAIN, X_TEST, y_train, y_test = train_test_split(X, y, test_size=0.1)
 
 
 # PIPELINE ----------------------------
@@ -91,17 +109,17 @@ preprocessor = ColumnTransformer(
 pipe = Pipeline(
     [
         ("preprocessor", preprocessor),
-        ("classifier", RandomForestClassifier(n_estimators=N_TREES)),
+        ("classifier", RandomForestClassifier(n_estimators=args.N_TREES)),
     ]
 )
 
 
 # ESTIMATION ET EVALUATION ----------------------
 
-pipe.fit(X_train, y_train)
+pipe.fit(X_TRAIN, y_train)
 
 # score
-rdmf_score = pipe.score(X_test, y_test)
+rdmf_score = pipe.score(X_TEST, y_test)
 print(f"{rdmf_score:.1%} de bonnes réponses sur les données de test pour validation")
 
 print(20 * "-")
