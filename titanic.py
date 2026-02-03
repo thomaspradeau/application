@@ -106,4 +106,4 @@ print(f"{rdmf_score:.1%} de bonnes réponses sur les données de test pour valid
 
 print(20 * "-")
 print("matrice de confusion")
-print(confusion_matrix(y_test, pipe.predict(X_test)))
+print(confusion_matrix(y_test, pipe.predict(X_TEST)))
