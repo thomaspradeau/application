@@ -37,7 +37,7 @@ else:
 
 # IMPORT ET STRUCTURATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv("data.csv")
+TrainingData = pd.read_csv("data/raw/data.csv")
 
 y = TrainingData["Survived"]
 X = TrainingData.drop("Survived", axis="columns")
