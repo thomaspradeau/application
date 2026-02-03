@@ -29,6 +29,8 @@ parser = argparse.ArgumentParser(description="Paramètres du random forest")
 parser.add_argument(
     "--n_trees", type=int, default=20, help="Nombre d'arbres"
 )
+parser.add_argument("--max_depth", type=int, default=None, help="Profondeur max (default: None)")
+parser.add_argument("--max_features", type=str, default="sqrt", help="Features max (default: 'sqrt')")
 args = parser.parse_args()
 
 n_trees = args.n_trees
@@ -70,89 +72,69 @@ plt.show()
 y = TrainingData["Survived"]
 X = TrainingData.drop("Survived", axis="columns")
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1)
+X_train, X_TEST, y_train, y_test = train_test_split(X, y, test_size=0.1)
 pd.concat([X_train, y_train], axis = 1).to_csv("train.csv")
-pd.concat([X_test, y_test], axis = 1).to_csv("test.csv")
+pd.concat([X_TEST, y_test], axis = 1).to_csv("test.csv")
 
 
 # PIPELINE ----------------------------
+
 
 # Définition des variables
 numeric_features = ["Age", "Fare"]
 categorical_features = ["Embarked", "Sex"]
 
-# Variables numériques
-numeric_transformer = Pipeline(
-    steps=[
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", MinMaxScaler()),
-    ]
-)
-# Variables numériques
-numeric_transformer = Pipeline(
-    steps=[
-        ("imputer", SimpleImputer(strategy="median")),
-        ("scaler", MinMaxScaler()),
-    ]
-)
 
-# Variables catégorielles
-categorical_transformer = Pipeline(
-    steps=[
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("onehot", OneHotEncoder()),
-    ]
-)
-# Variables catégorielles
-categorical_transformer = Pipeline(
+def get_pipeline(n_trees, numeric_features, categorical_features, max_depth=None, max_features="sqrt"):
+    """
+    Crée un pipeline complet intégrant preprocessing et modèle.
+    """
+    # 1. Variables numériques
+    numeric_transformer = Pipeline(steps=[
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", MinMaxScaler()),
+    ])
+
+    # 2. Variables catégorielles
+    categorical_transformer = Pipeline(
     steps=[
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("onehot", OneHotEncoder()),
     ]
 )
 
-# Preprocessing
-# Preprocessing
-preprocessor = ColumnTransformer(
-    transformers=[
-        ("Preprocessing numerical", numeric_transformer, numeric_features),
-        (
-            "Preprocessing categorical",
-            categorical_transformer,
-            categorical_features,
-        ),
-    ]
-)
-    transformers=[
-        ("Preprocessing numerical", numeric_transformer, numeric_features),
-        (
-            "Preprocessing categorical",
-            categorical_transformer,
-            categorical_features,
-        ),
-    ]
-)
+    # 3. Preprocessing (ColumnTransformer)
+    preprocessor = ColumnTransformer(transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features),
+    ])
 
-# Pipeline
-# Pipeline
-pipe = Pipeline(
-    [
+    # 4. Pipeline final (Preprocessing + Classifier)
+    pipe = Pipeline(steps=[
         ("preprocessor", preprocessor),
         ("classifier", RandomForestClassifier(
             n_estimators=n_trees,
-            max_depth=MAX_DEPTH,
-            max_features=MAX_FEATURES
+            max_depth=max_depth,
+            max_features=max_features
         )),
-    ]
-)
+    ])
+    
+    return pipe
 
 
 # ESTIMATION ET EVALUATION ----------------------
+pipe = get_pipeline(
+        n_trees=args.n_trees,
+        numeric_features=numeric_features,
+        categorical_features=categorical_features,
+        max_depth=args.max_depth,
+        max_features=args.max_features
+    )
 
 pipe.fit(X_train, y_train)
 
 # score
-rdmf_score = pipe.score(X_test, y_test)
+rdmf_score = pipe.score(X_TEST, y_test)
 print(f"{rdmf_score:.1%} de bonnes réponses sur les données de test pour validation")
 
 print(20 * "-")
