@@ -39,7 +39,7 @@ MAX_FEATURES = "sqrt"
 
 n_trees = args.n_trees
 jeton_api = os.environ.get("JETON_API", "")
-data_path = os.environ.get("DATA_PATH", "data.csv")
+data_path = os.environ.get("DATA_PATH", "data/raw/data.csv")
 
 
 if jeton_api.startswith("$"):
@@ -50,7 +50,7 @@ else:
 
 # IMPORT ET STRUCTURATION DONNEES --------------------------------
 
-TrainingData = pd.read_csv("data.csv")
+TrainingData = pd.read_csv("data/raw/data.csv")
 
 y = TrainingData["Survived"]
 X = TrainingData.drop("Survived", axis="columns")
