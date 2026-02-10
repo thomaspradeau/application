@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 PyYAML
 python-dotenv
 pandas
 duckdb
 scikit-learn
+=======
+pandas
+PyYAML
+scikit-learn
+python-dotenv
+loguru
+>>>>>>> 8c66da66af46ec55c78ab375525ed5f6447fc340
